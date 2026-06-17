@@ -1,0 +1,14 @@
+{
+  "name": "trivia-royale",
+  "version": "1.0.0",
+  "description": "AI-powered multiplayer elimination trivia Discord bot",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "node --watch index.js"
+  },
+  "dependencies": {
+    "discord.js": "^14.18.0",
+    "dotenv": "^16.4.5"
+  }
+}
