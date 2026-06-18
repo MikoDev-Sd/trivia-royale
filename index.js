@@ -1,17 +1,23 @@
 require('dotenv').config();
 const { Client, GatewayIntentBits, Collection, REST, Routes } = require('discord.js');
-const triviaCommand = require('./commands/trivia');
+const fs = require('fs');
+const path = require('path');
 
 const client = new Client({
   intents: [GatewayIntentBits.Guilds],
 });
 
 client.commands = new Collection();
-client.commands.set(triviaCommand.data.name, triviaCommand);
+
+const commandFiles = fs.readdirSync(path.join(__dirname, 'commands')).filter(f => f.endsWith('.js'));
+for (const file of commandFiles) {
+  const command = require(`./commands/${file}`);
+  client.commands.set(command.data.name, command);
+}
 
 async function registerCommands() {
   const rest = new REST().setToken(process.env.DISCORD_TOKEN);
-  const commands = [triviaCommand.data.toJSON()];
+  const commands = [...client.commands.values()].map(c => c.data.toJSON());
 
   try {
     if (process.env.GUILD_ID) {
@@ -19,10 +25,10 @@ async function registerCommands() {
         Routes.applicationGuildCommands(process.env.CLIENT_ID, process.env.GUILD_ID),
         { body: commands }
       );
-      console.log(`✅ Commands registered to guild ${process.env.GUILD_ID}`);
+      console.log(`✅ ${commands.length} commands registered to guild ${process.env.GUILD_ID}`);
     } else {
       await rest.put(Routes.applicationCommands(process.env.CLIENT_ID), { body: commands });
-      console.log('✅ Commands registered globally');
+      console.log(`✅ ${commands.length} commands registered globally`);
     }
   } catch (err) {
     console.error('Failed to register commands:', err);
